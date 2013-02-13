@@ -1,0 +1,158 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <l:layout title="Log Searcher">
+        <l:header>
+            <link rel="stylesheet" type="text/css" href="/jenkins/css/style.css" />
+            <link rel="stylesheet" type="text/css" href="/jenkins/css/color.css" />
+            <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+            <script type="text/javascript">
+                function divToggle(divTag)
+                {
+                    if(document.getElementById(divTag).style.display == "none") {
+                        document.getElementById(divTag+'-img').src="${it.getSmallIconUrl()}/document_delete.png";
+                        document.getElementById(divTag).style.display = "block";
+                    }else{
+                        document.getElementById(divTag+'-img').src="${it.getSmallIconUrl()}/document_add.png";
+                        document.getElementById(divTag).style.display = "none";
+                    }
+                }
+                
+                function setMousePointer(obj)
+                {
+                    obj.style.cursor='pointer';
+                }
+                
+                function createSerchesList(){
+                    var searchObj =<st:bind value="${it}"/>;
+                    searchObj.getSearchesTable(function(t) {
+                        document.getElementById('divSearches').innerHTML=t.responseObject();
+                    })
+                }
+                function loadOldSearch(id)
+                {
+                    var searchObj =<st:bind value="${it}"/>;
+                    searchObj.getOldSearch(id, function(t) {
+                        document.getElementById('operationsHeader').innerHTML="<b>Results</b>";
+                        document.getElementById('result').innerHTML = t.responseObject();
+                    })
+                }
+                function performSearch()
+                {
+                    var searchObj =<st:bind value="${it}"/>;
+                    var branchPattern = $("#txtBranchPattern").val();
+                    var messagePattern = $("#txtMessagePattern").val();
+                    var onlyBrokenBuilds = $("#chkBrokenBuilds").is(':checked');
+                    var onlyLastBuilds = $("#chkLastBuild").is(':checked');
+                    maxBuilds = $("#selMaxBuilds").val();
+                    $('#result').hide();
+                    $('#btnSearch').hide();
+                    $('#prevSearches').hide();
+                    
+                    document.getElementById('inProgress').innerHTML = '<img src="${rootURL}/plugin/jenkins-logsearcher/24x24/ajax-loader.gif"/>Searching the universe, please wait';
+                     
+                    searchObj.search(branchPattern, messagePattern, maxBuilds,onlyLastBuilds,onlyBrokenBuilds, function(t) {
+                        createSerchesList();
+                        document.getElementById('inProgress').innerHTML="";
+                        $('#result').show();
+                        $('#btnSearch').show();
+                        document.getElementById('operationsHeader').innerHTML="<b>Results</b>";
+                        alert('5');
+                        document.getElementById('result').innerHTML = t.responseObject();
+                        alert('7');
+                    })
+                }
+                function showHelp(divTag)
+                {
+                    if(document.getElementById(divTag).style.display == "none") {
+                        document.getElementById(divTag).style.display = "block";
+                    }else{
+                        document.getElementById(divTag).style.display = "none";
+                    }
+                }
+                function setMousePointer(obj)
+                {
+                    obj.style.cursor='pointer';
+                }
+            </script>
+        </l:header>
+        
+        <l:side-panel>
+            <st:include page="sidepanel.jelly" it="${it.getRootView()}" />
+        </l:side-panel>
+        <l:main-panel>
+            <body onLoad="createSerchesList()">
+                <H1><img src="${rootURL}/plugin/jenkins-logsearcher/24x24/SearchIcon.png"/> Log Searcher</H1>
+                <table>
+                    <tr>
+                        <td>
+                            <table width="100%">
+                                <tr>
+                                    <td colspan="2"><b>Search form:</b></td>
+                                </tr>
+                                <tr>
+                                    <td>Project name pattern</td>
+                                    <td widht="100"><input type="text" id="txtBranchPattern" size="80"/>
+                                    <img src="${rootURL}/images/16x16/help.png" onClick="showHelp('va')" default="INT-V.*" onmouseover="setMousePointer(this)"/><div id="va" style="display:none">Use regex to filter project to search</div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Message pattern</td>
+                                    <td><input type="text" id="txtMessagePattern" size="80"/>
+                                    <img src="${rootURL}/images/16x16/help.png" onClick="showHelp('vb')" value=".*error\:.*" onmouseover="setMousePointer(this)"/><div id="vb" style="display:none">Will search for the specified pattern and print the rows that matches</div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Max Builds</td>
+                                    <td>
+                                        <select id="selMaxBuilds">
+                                            <option>1</option>
+                                            <option>5</option>
+                                            <option>10</option>
+                                            <option selected="selected">20</option>
+                                            <option>50</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Search only in broken builds</td>
+                                    <td><input type="checkbox" id="chkBrokenBuilds" checked="true"/></td>
+                                </tr>
+                                <tr>
+                                    <td>Search only in the last build</td>
+                                    <td><input type="checkbox" id="chkLastBuild"/></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2"><br /></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">
+                                        <button id="btnSearch" onclick="performSearch()">Search</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2"><div id="inProgress" /></td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td width="30"></td>
+                        <td>
+                            <div id="divSearches" />
+                        </td>     
+                    </tr>
+                </table>            
+                <table>
+                    <tr>
+                        <td colspan="2">
+                            <div id="operationsHeader"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <div id="result" />
+                        </td>
+                    </tr>
+                </table>
+            </body>
+        </l:main-panel>
+    </l:layout>
+
+</j:jelly>
