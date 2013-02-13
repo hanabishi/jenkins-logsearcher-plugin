@@ -30,18 +30,46 @@
                 function loadOldSearch(id)
                 {
                     var searchObj =<st:bind value="${it}"/>;
-                    searchObj.getOldSearch(id, function(t) {
-                        document.getElementById('operationsHeader').innerHTML="<b>Results</b>";
-                        document.getElementById('result').innerHTML = t.responseObject();
+                    document.getElementById('operationsHeader').innerHTML="<b>Results</b>";
+                    
+                    searchObj.getOldSearchResult(id, function(t) {
+                        document.getElementById('result').innerHTML  = t.responseObject();
                     })
+                    
+                    searchObj.getOldSearchProject(id, function(t) {
+                        document.getElementById('txtProjectPattern').value = t.responseObject();
+                    })
+                    
+                    searchObj.getOldSearchMessage(id, function(t) {
+                        document.getElementById('txtMessagePattern').value = t.responseObject();
+                    })
+                    
+                    searchObj.getOldSearchBroken(id, function(t) {
+                        document.getElementById('chkBrokenBuilds').checked  = t.responseObject();
+                    })
+                    
+                    searchObj.getOldSearchLast(id, function(t) {
+                        document.getElementById('chkLastBuild').checked  = t.responseObject();
+                    })
+                    
+                    searchObj.getOldSearchCase(id, function(t) {
+                        document.getElementById('chkCaseInsensitive').checked  = t.responseObject();
+                    })
+                    
+                    searchObj.getOldSearchBuilds(id, function(t) {
+                        alert(t.responseObject());
+                        document.getElementById('selMaxBuilds').text  = t.responseObject();
+                    })
+                    
                 }
                 function performSearch()
                 {
                     var searchObj =<st:bind value="${it}"/>;
-                    var branchPattern = $("#txtBranchPattern").val();
+                    var branchPattern = $("#txtProjectPattern").val();
                     var messagePattern = $("#txtMessagePattern").val();
                     var onlyBrokenBuilds = $("#chkBrokenBuilds").is(':checked');
                     var onlyLastBuilds = $("#chkLastBuild").is(':checked');
+                    var chkCaseInsensitive = $("#chkCaseInsensitive").is(':checked');
                     maxBuilds = $("#selMaxBuilds").val();
                     $('#result').hide();
                     $('#btnSearch').hide();
@@ -49,15 +77,13 @@
                     
                     document.getElementById('inProgress').innerHTML = '<img src="${rootURL}/plugin/jenkins-logsearcher/24x24/ajax-loader.gif"/>Searching the universe, please wait';
                      
-                    searchObj.search(branchPattern, messagePattern, maxBuilds,onlyLastBuilds,onlyBrokenBuilds, function(t) {
+                    searchObj.search(branchPattern, messagePattern, maxBuilds,onlyLastBuilds,onlyBrokenBuilds, chkCaseInsensitive, function(t) {
                         createSerchesList();
                         document.getElementById('inProgress').innerHTML="";
                         $('#result').show();
                         $('#btnSearch').show();
                         document.getElementById('operationsHeader').innerHTML="<b>Results</b>";
-                        alert('5');
                         document.getElementById('result').innerHTML = t.responseObject();
-                        alert('7');
                     })
                 }
                 function showHelp(divTag)
@@ -90,13 +116,13 @@
                                 </tr>
                                 <tr>
                                     <td>Project name pattern</td>
-                                    <td widht="100"><input type="text" id="txtBranchPattern" size="80"/>
+                                    <td widht="100"><input type="text" id="txtProjectPattern" size="60"/>
                                     <img src="${rootURL}/images/16x16/help.png" onClick="showHelp('va')" default="INT-V.*" onmouseover="setMousePointer(this)"/><div id="va" style="display:none">Use regex to filter project to search</div>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>Message pattern</td>
-                                    <td><input type="text" id="txtMessagePattern" size="80"/>
+                                    <td><input type="text" id="txtMessagePattern" size="60"/>
                                     <img src="${rootURL}/images/16x16/help.png" onClick="showHelp('vb')" value=".*error\:.*" onmouseover="setMousePointer(this)"/><div id="vb" style="display:none">Will search for the specified pattern and print the rows that matches</div>
                                     </td>
                                 </tr>
@@ -119,6 +145,10 @@
                                 <tr>
                                     <td>Search only in the last build</td>
                                     <td><input type="checkbox" id="chkLastBuild"/></td>
+                                </tr>
+                                <tr>
+                                    <td>Case insensitive</td>
+                                    <td><input type="checkbox" id="chkCaseInsensitive" checked="true"/></td>
                                 </tr>
                                 <tr>
                                     <td colspan="2"><br /></td>

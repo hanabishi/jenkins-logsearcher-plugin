@@ -11,7 +11,6 @@ import java.util.List;
 
 import jenkins.model.Jenkins;
 
-import org.jenkinsci.plugins.jenkins_logsearcher.Collections.SearchResult;
 import org.jenkinsci.plugins.jenkins_logsearcher.Collections.SearchSummary;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
@@ -57,31 +56,74 @@ public class LogSearcherAction implements Action {
         String data = "<table><tr><td><b>Previous searches:</b></td></tr>";
 
         for (int i = getMyList().size() - 1; i >= 0; i--) {
-            data = data.concat("<tr onClick=\"loadOldSearch('" + getMyList().get(i).getId()
+            SearchSummary searchSummary = getMyList().get(i);
+            data = data.concat("<tr onClick=\"loadOldSearch('" + searchSummary.getId()
                     + "')\" onmouseover=\"setMousePointer(this)\"><td><img src=\"" + Jenkins.getInstance().getRootUrl()
-                    + "/plugin/jenkins-logsearcher/16x16/icon_log.png\"/><b> " + getMyList().get(i).getSearchPattern()
-                    + "</b> in <b>" + getMyList().get(i).getProjectPattern() + "</b></td></tr>");
+                    + "/plugin/jenkins-logsearcher/16x16/icon_log.png\"/> <b>" + searchSummary.getSearchDate()
+                    + "</b><br /><b>" + searchSummary.getSearchPattern() + "</b> in <b>"
+                    + searchSummary.getProjectPattern() + "</b></td></tr>");
         }
         data = data.concat("</table>");
         return data;
     }
 
-    @JavaScriptMethod
-    public String getOldSearch(String id) {
+    public SearchSummary getOldSearch(String id) {
         long longID = Long.parseLong(id);
         for (SearchSummary result : getMyList()) {
             if (longID == result.getId()) {
-                return pageGenerator(result);
+                return result;
             }
         }
-        return "Unable to find a search with the ID: " + id;
+        return null;
+    }
+
+    @JavaScriptMethod
+    public String getOldSearchResult(String id) {
+        SearchSummary s = getOldSearch(id);
+        return s != null ? s.pageGenerator() : "";
+    }
+
+    @JavaScriptMethod
+    public String getOldSearchProject(String id) {
+        SearchSummary s = getOldSearch(id);
+        return s != null ? s.getProjectPattern() : "";
+    }
+
+    @JavaScriptMethod
+    public String getOldSearchMessage(String id) {
+        SearchSummary s = getOldSearch(id);
+        return s != null ? s.getSearchPattern() : "";
+    }
+
+    @JavaScriptMethod
+    public String getOldSearchBuilds(String id) {
+        SearchSummary s = getOldSearch(id);
+        return s != null ? s.getMaxBuilds() + "" : "1";
+    }
+
+    @JavaScriptMethod
+    public boolean getOldSearchBroken(String id) {
+        SearchSummary s = getOldSearch(id);
+        return s != null ? s.isSearchOnlyBrokenBuilds() : false;
+    }
+
+    @JavaScriptMethod
+    public boolean getOldSearchLast(String id) {
+        SearchSummary s = getOldSearch(id);
+        return s != null ? s.isSearchOnlyLastBuild() : false;
+    }
+
+    @JavaScriptMethod
+    public boolean getOldSearchCase(String id) {
+        SearchSummary s = getOldSearch(id);
+        return s != null ? s.isCaseInsensitive() : false;
     }
 
     @JavaScriptMethod
     public String search(String branchPattern, String messagePattern, String maxBuilds, boolean onlyLastBuilds,
-            boolean onlyBrokenBuilds) throws IOException {
+            boolean onlyBrokenBuilds, boolean chkCI) throws IOException {
         Searcher s = new Searcher(branchPattern, messagePattern, onlyBrokenBuilds, onlyLastBuilds,
-                Long.parseLong(maxBuilds));
+                Long.parseLong(maxBuilds), chkCI);
         SearchSummary sum = s.search();
 
         synchronized (this) {
@@ -91,25 +133,7 @@ public class LogSearcherAction implements Action {
             getMyList().add(sum);
             Jenkins.getInstance().save();
         }
-        return pageGenerator(sum);
-    }
-
-    public String pageGenerator(SearchSummary sum) {
-        String block = "";
-        block += "<table><tr><td colspan=\"2\"><b>Search statistics:</b><br />";
-
-        block += "The search using project pattern <b>" + sum.getProjectPattern() + "</b> and message pattern <b>"
-                + sum.getSearchPattern() + "</b> returned <b>" + sum.getTotalRowHits() + "</b> rows in <b>"
-                + sum.getProjectHits() + "</b> projects and <b>" + sum.getTotalBuildHits()
-                + "</b> build. The search took <b>" + sum.getElapsedTime() / 1000 + "</b> seconds to run</td></tr>";
-
-        for (SearchResult result : sum.getSearchResult()) {
-            block = block.concat("<tr><td colspan=\"2\">" + result.getLink() + "</td></tr>");
-            block = block.concat("<tr><td width=\"20\"></td><td><div id=\"" + result.getID() + "\">"
-                    + result.getMessages() + "</div></td></tr>");
-        }
-
-        return block + "</table>";
+        return sum.pageGenerator();
     }
 
     public HashMap<String, List<SearchSummary>> getSearches() {

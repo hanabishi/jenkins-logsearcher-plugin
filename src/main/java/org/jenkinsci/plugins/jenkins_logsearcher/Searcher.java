@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -31,17 +33,20 @@ public class Searcher {
     private long totalRowHits = 0;
     private long maxBuildHits;
     private long currentID = 0;
-    private boolean searchOnlyLastBuilds;
+    private boolean onlySearchLastBuilds;
+    private boolean caseInsensitive;
 
     public Searcher(String projectPattern, String messagePattern, boolean onlySearchFailedBuilds,
-            boolean searchOnlyLastBuilds, long maxBuildHits) {
+            boolean onlySearchLastBuilds, long maxBuildHits, boolean caseInsensitive) {
         this.onlySearchFailedBuilds = onlySearchFailedBuilds;
-        this.searchOnlyLastBuilds = searchOnlyLastBuilds;
+        this.onlySearchLastBuilds = onlySearchLastBuilds;
         this.maxBuildHits = maxBuildHits;
         this.projectPatternString = projectPattern;
         this.messagePatternString = messagePattern;
-        this.projectPattern = Pattern.compile(projectPattern);
-        this.messagePattern = Pattern.compile(messagePattern);
+        this.caseInsensitive = caseInsensitive;
+        int flags = caseInsensitive ? Pattern.CASE_INSENSITIVE : 0;
+        this.projectPattern = Pattern.compile(projectPattern, flags);
+        this.messagePattern = Pattern.compile(messagePattern, flags);
     }
 
     public static void tryClose(FileReader stream) {
@@ -88,7 +93,6 @@ public class Searcher {
     }
 
     private List<String> searchFile(File logFile) {
-        long rowHits = 0;
         List<String> results = new LinkedList<String>();
         if (!logFile.exists()) {
             return results;
@@ -100,7 +104,6 @@ public class Searcher {
             Matcher m = messagePattern.matcher(line);
             if (m.matches()) {
                 totalRowHits++;
-                rowHits++;
                 results.add(line.replaceAll(Pattern.quote("\\"), "\\\\"));
             }
         }
@@ -134,7 +137,7 @@ public class Searcher {
                     break;
                 }
             }
-            if (searchOnlyLastBuilds) {
+            if (onlySearchLastBuilds) {
                 break;
             }
             build = build.getPreviousBuild();
@@ -159,8 +162,10 @@ public class Searcher {
             }
         }
         long elapsedTime = System.currentTimeMillis() - start;
-        return new SearchSummary(results, "date", messagePatternString, projectPatternString, elapsedTime,
-                totalRowHits, projectHits, totalBuildHits);
+
+        return new SearchSummary(results, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
+                messagePatternString, projectPatternString, elapsedTime, totalRowHits, projectHits, totalBuildHits,
+                caseInsensitive, onlySearchFailedBuilds, onlySearchLastBuilds, this.maxBuildHits);
     }
 
 }

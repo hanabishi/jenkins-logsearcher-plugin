@@ -15,9 +15,18 @@ public class SearchSummary {
     private long totalBuildHits;
     private long id = 0;
     public static Random rnd = new Random();
+    private boolean caseInsensitive;
+    private boolean searchOnlyBrokenBuilds;
+    private boolean searchOnlyLastBuild;
+    private long maxBuilds;
 
     public SearchSummary(List<SearchResult> searchResult, String searchDate, String searchPattern,
-            String projectPattern, long elapsedTime, long totalRowHits, long projectHits, long totalBuildHits) {
+            String projectPattern, long elapsedTime, long totalRowHits, long projectHits, long totalBuildHits,
+            boolean caseInsensitive, boolean searchOnlyBrokenBuilds, boolean searchOnlyLastBuild, long maxBuilds) {
+        this.setMaxBuilds(maxBuilds);
+        this.setCaseInsensitive(caseInsensitive);
+        this.setSearchOnlyBrokenBuilds(searchOnlyBrokenBuilds);
+        this.setSearchOnlyLastBuild(searchOnlyLastBuild);
         this.setTotalRowHits(totalRowHits);
         this.setProjectHits(projectHits);
         this.setTotalBuildHits(totalBuildHits);
@@ -99,5 +108,55 @@ public class SearchSummary {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public boolean isCaseInsensitive() {
+        return caseInsensitive;
+    }
+
+    public void setCaseInsensitive(boolean caseInsensitive) {
+        this.caseInsensitive = caseInsensitive;
+    }
+
+    public boolean isSearchOnlyBrokenBuilds() {
+        return searchOnlyBrokenBuilds;
+    }
+
+    public void setSearchOnlyBrokenBuilds(boolean searchOnlyBrokenBuilds) {
+        this.searchOnlyBrokenBuilds = searchOnlyBrokenBuilds;
+    }
+
+    public boolean isSearchOnlyLastBuild() {
+        return searchOnlyLastBuild;
+    }
+
+    public void setSearchOnlyLastBuild(boolean searchOnlyLastBuild) {
+        this.searchOnlyLastBuild = searchOnlyLastBuild;
+    }
+
+    public String pageGenerator() {
+        String block = "";
+        block += "<table><tr><td colspan=\"2\"><b>Search statistics:</b><br />";
+
+        block += "The search using project pattern <b>" + getProjectPattern() + "</b> and message pattern <b>"
+                + getSearchPattern() + "</b> returned <b>" + getTotalRowHits() + "</b> rows in <b>" + getProjectHits()
+                + "</b> projects and <b>" + getTotalBuildHits() + "</b> build. The search took <b>" + getElapsedTime()
+                / 1000 + "</b> seconds to run</td></tr>";
+
+        for (SearchResult result : getSearchResult()) {
+            block = block.concat("<tr><td colspan=\"2\">" + result.getLink() + "</td></tr>");
+            block = block.concat("<tr><td width=\"20\"></td><td><div id=\"" + result.getID() + "\">"
+                    + "</div></td></tr>");
+        }
+
+        return block + "</table>";
+    }
+
+    public long getMaxBuilds() {
+        return maxBuilds;
+    }
+
+    public void setMaxBuilds(long maxBuilds) {
+        this.maxBuilds = maxBuilds;
     }
 }
