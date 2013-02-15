@@ -7,8 +7,6 @@ import java.util.List;
 
 import jenkins.model.Jenkins;
 
-import org.apache.commons.lang.StringEscapeUtils;
-
 public class SearchResult {
     private String buildName = "";
     private String buildVersion = "";
@@ -30,7 +28,7 @@ public class SearchResult {
         String message = "";
         for (String d : getData()) {
             if (!d.trim().isEmpty()) {
-                message = message.concat("<b*></b> " + StringEscapeUtils.escapeHtml(d.trim()) + "<br/>");
+                message = message.concat("<b>*</b> " + d.trim() + "<br/>");
             }
         }
         return message;

@@ -57,8 +57,7 @@
                     })
                     
                     searchObj.getOldSearchBuilds(id, function(t) {
-                        alert(t.responseObject());
-                        document.getElementById('selMaxBuilds').text  = t.responseObject();
+                        document.getElementById('selMaxBuilds').selectedIndex = t.responseObject();
                     })
                     
                 }
@@ -76,7 +75,7 @@
                     $('#prevSearches').hide();
                     
                     document.getElementById('inProgress').innerHTML = '<img src="${rootURL}/plugin/jenkins-logsearcher/24x24/ajax-loader.gif"/>Searching the universe, please wait';
-                     
+                    
                     searchObj.search(branchPattern, messagePattern, maxBuilds,onlyLastBuilds,onlyBrokenBuilds, chkCaseInsensitive, function(t) {
                         createSerchesList();
                         document.getElementById('inProgress').innerHTML="";
@@ -130,11 +129,7 @@
                                     <td>Max Builds</td>
                                     <td>
                                         <select id="selMaxBuilds">
-                                            <option>1</option>
-                                            <option>5</option>
-                                            <option>10</option>
-                                            <option selected="selected">20</option>
-                                            <option>50</option>
+                                            ${it.getOptions()}
                                         </select>
                                     </td>
                                 </tr>

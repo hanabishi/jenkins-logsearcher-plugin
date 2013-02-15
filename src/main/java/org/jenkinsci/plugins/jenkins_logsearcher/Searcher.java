@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 
 import jenkins.model.Jenkins;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.jenkinsci.plugins.jenkins_logsearcher.Collections.SearchResult;
 import org.jenkinsci.plugins.jenkins_logsearcher.Collections.SearchSummary;
 
@@ -31,13 +32,13 @@ public class Searcher {
     private long projectHits = 0;
     private long totalBuildHits = 0;
     private long totalRowHits = 0;
-    private long maxBuildHits;
+    private int maxBuildHits;
     private long currentID = 0;
     private boolean onlySearchLastBuilds;
     private boolean caseInsensitive;
 
     public Searcher(String projectPattern, String messagePattern, boolean onlySearchFailedBuilds,
-            boolean onlySearchLastBuilds, long maxBuildHits, boolean caseInsensitive) {
+            boolean onlySearchLastBuilds, int maxBuildHits, boolean caseInsensitive) {
         this.onlySearchFailedBuilds = onlySearchFailedBuilds;
         this.onlySearchLastBuilds = onlySearchLastBuilds;
         this.maxBuildHits = maxBuildHits;
@@ -45,6 +46,7 @@ public class Searcher {
         this.messagePatternString = messagePattern;
         this.caseInsensitive = caseInsensitive;
         int flags = caseInsensitive ? Pattern.CASE_INSENSITIVE : 0;
+
         this.projectPattern = Pattern.compile(projectPattern, flags);
         this.messagePattern = Pattern.compile(messagePattern, flags);
     }
@@ -93,6 +95,7 @@ public class Searcher {
     }
 
     private List<String> searchFile(File logFile) {
+        int rows = 0;
         List<String> results = new LinkedList<String>();
         if (!logFile.exists()) {
             return results;
@@ -101,10 +104,24 @@ public class Searcher {
         List<String> data = readFile(logFile);
 
         for (String line : data) {
+            line = StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(line));
             Matcher m = messagePattern.matcher(line);
-            if (m.matches()) {
+            // line.
+
+            boolean found = false;
+            while (m.find()) {
+                found = true;
+                line = line.replaceAll(Pattern.quote(m.group(0)), "<b><font color=\"red\">" + m.group(0)
+                        + "</font></b>");
+            }
+            if (found) {
+                rows++;
                 totalRowHits++;
-                results.add(line.replaceAll(Pattern.quote("\\"), "\\\\"));
+                results.add(line);
+            }
+            if (rows > 100) {
+                results.add("<b><font color=\"red\">Row limit exeded</font></b>");
+                break;
             }
         }
 

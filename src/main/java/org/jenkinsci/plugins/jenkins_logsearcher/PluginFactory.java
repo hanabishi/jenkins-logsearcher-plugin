@@ -13,6 +13,7 @@ public class PluginFactory extends TransientViewActionFactory {
     public List<Action> createFor(View v) {
         List<Action> result = new LinkedList<Action>();
         result.add(new LogSearcherAction());
+
         return result;
     }
 

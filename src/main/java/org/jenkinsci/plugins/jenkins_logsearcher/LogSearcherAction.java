@@ -5,6 +5,7 @@ import hudson.model.User;
 import hudson.model.View;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,12 +19,28 @@ import org.kohsuke.stapler.bind.JavaScriptMethod;
 public class LogSearcherAction implements Action {
 
     private HashMap<String, List<SearchSummary>> searches = new HashMap<String, List<SearchSummary>>();
+    private ArrayList<Integer> options = new ArrayList<Integer>();
+    private int defaultKey = 20;
 
     public LogSearcherAction() {
+        options.add(1);
+        options.add(5);
+        options.add(10);
+        options.add(20);
+        options.add(50);
     }
 
     public String getIconFileName() {
         return "/plugin/jenkins-logsearcher/24x24/SearchIcon.png";
+    }
+
+    public String getOptions() {
+        String optSection = "";
+        for (int key : options) {
+            optSection = optSection.concat("<option " + (key == defaultKey ? "selected=\"selected\"" : "") + ">" + key
+                    + "</option>");
+        }
+        return optSection;
     }
 
     private List<SearchSummary> getMyList() {
@@ -96,9 +113,12 @@ public class LogSearcherAction implements Action {
     }
 
     @JavaScriptMethod
-    public String getOldSearchBuilds(String id) {
+    public int getOldSearchBuilds(String id) {
         SearchSummary s = getOldSearch(id);
-        return s != null ? s.getMaxBuilds() + "" : "1";
+        if (s != null) {
+            return options.contains(s.getMaxBuilds()) ? options.indexOf(s.getMaxBuilds()) : options.indexOf(defaultKey);
+        }
+        return 0;
     }
 
     @JavaScriptMethod
@@ -122,16 +142,18 @@ public class LogSearcherAction implements Action {
     @JavaScriptMethod
     public String search(String branchPattern, String messagePattern, String maxBuilds, boolean onlyLastBuilds,
             boolean onlyBrokenBuilds, boolean chkCI) throws IOException {
+        if (messagePattern.length() < 5) {
+            return "You need to enter a longer search pattern, the pattern needs to be at least 5 chars long";
+        }
         Searcher s = new Searcher(branchPattern, messagePattern, onlyBrokenBuilds, onlyLastBuilds,
-                Long.parseLong(maxBuilds), chkCI);
+                Integer.parseInt(maxBuilds), chkCI);
         SearchSummary sum = s.search();
 
         synchronized (this) {
-            if (getMyList().size() >= 10) {
+            if (getMyList().size() >= 5) {
                 getMyList().remove(0);
             }
             getMyList().add(sum);
-            Jenkins.getInstance().save();
         }
         return sum.pageGenerator();
     }

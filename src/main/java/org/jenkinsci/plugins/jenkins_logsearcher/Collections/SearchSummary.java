@@ -18,11 +18,11 @@ public class SearchSummary {
     private boolean caseInsensitive;
     private boolean searchOnlyBrokenBuilds;
     private boolean searchOnlyLastBuild;
-    private long maxBuilds;
+    private int maxBuilds;
 
     public SearchSummary(List<SearchResult> searchResult, String searchDate, String searchPattern,
             String projectPattern, long elapsedTime, long totalRowHits, long projectHits, long totalBuildHits,
-            boolean caseInsensitive, boolean searchOnlyBrokenBuilds, boolean searchOnlyLastBuild, long maxBuilds) {
+            boolean caseInsensitive, boolean searchOnlyBrokenBuilds, boolean searchOnlyLastBuild, int maxBuilds) {
         this.setMaxBuilds(maxBuilds);
         this.setCaseInsensitive(caseInsensitive);
         this.setSearchOnlyBrokenBuilds(searchOnlyBrokenBuilds);
@@ -146,17 +146,17 @@ public class SearchSummary {
         for (SearchResult result : getSearchResult()) {
             block = block.concat("<tr><td colspan=\"2\">" + result.getLink() + "</td></tr>");
             block = block.concat("<tr><td width=\"20\"></td><td><div id=\"" + result.getID() + "\">"
-                    + "</div></td></tr>");
+                    + result.getMessages() + "</div></td></tr>");
         }
 
         return block + "</table>";
     }
 
-    public long getMaxBuilds() {
+    public int getMaxBuilds() {
         return maxBuilds;
     }
 
-    public void setMaxBuilds(long maxBuilds) {
+    public void setMaxBuilds(int maxBuilds) {
         this.maxBuilds = maxBuilds;
     }
 }
