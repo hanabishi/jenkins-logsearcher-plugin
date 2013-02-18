@@ -1,6 +1,6 @@
 package org.jenkinsci.plugins.jenkins_logsearcher;
 
-import hudson.model.Action;
+import hudson.model.RootAction;
 import hudson.model.User;
 import hudson.model.View;
 
@@ -16,7 +16,7 @@ import org.jenkinsci.plugins.jenkins_logsearcher.Collections.SearchSummary;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 
-public class LogSearcherAction implements Action {
+public class LogSearcherAction implements RootAction {
 
     private HashMap<String, List<SearchSummary>> searches = new HashMap<String, List<SearchSummary>>();
     private ArrayList<Integer> options = new ArrayList<Integer>();
