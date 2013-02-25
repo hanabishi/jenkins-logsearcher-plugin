@@ -77,13 +77,15 @@
                     document.getElementById('inProgress').innerHTML = '<img src="${rootURL}/plugin/jenkins-logsearcher/24x24/ajax-loader.gif"/>Searching the universe, please wait';
                     
                     searchObj.search(branchPattern, messagePattern, maxBuilds,onlyLastBuilds,onlyBrokenBuilds, chkCaseInsensitive, function(t) {
+                        alert("done");  
                         createSerchesList();
                         document.getElementById('inProgress').innerHTML="";
                         $('#result').show();
                         $('#btnSearch').show();
-                        document.getElementById('operationsHeader').innerHTML="<b>Results</b>";
-                        document.getElementById('result').innerHTML = t.responseObject();
+                        //document.getElementById('operationsHeader').innerHTML="<b>Results</b>";
+                        //document.getElementById('result').innerHTML = t.responseObject();
                     })
+                    alert("done2");
                 }
                 function showHelp(divTag)
                 {

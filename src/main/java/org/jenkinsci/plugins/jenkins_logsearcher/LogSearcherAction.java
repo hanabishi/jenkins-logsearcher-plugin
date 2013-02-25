@@ -149,12 +149,10 @@ public class LogSearcherAction implements RootAction {
                 Integer.parseInt(maxBuilds), chkCI);
         SearchSummary sum = s.search();
 
-        synchronized (this) {
-            if (getMyList().size() >= 5) {
-                getMyList().remove(0);
-            }
-            getMyList().add(sum);
+        if (getMyList().size() >= 5) {
+            getMyList().remove(0);
         }
+        getMyList().add(sum);
         return sum.pageGenerator();
     }
 
