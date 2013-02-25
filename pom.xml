@@ -8,7 +8,7 @@
 
   <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>jenkins-logsearcher</artifactId>
-  <version>1.0-BETA</version>
+  <version>1.0</version>
   <packaging>hpi</packaging>
 
   <!--  Jenkins plugin config  -->

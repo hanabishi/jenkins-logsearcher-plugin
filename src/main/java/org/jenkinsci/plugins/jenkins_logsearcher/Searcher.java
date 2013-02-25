@@ -119,7 +119,7 @@ public class Searcher {
                 totalRowHits++;
                 results.add(line);
             }
-            if (rows > 100) {
+            if (rows > 25) {
                 results.add("<b><font color=\"red\">Row limit exeded</font></b>");
                 break;
             }
@@ -141,7 +141,7 @@ public class Searcher {
                 if (buildHits <= maxBuildHits || maxBuildHits == 0) {
                     File rootDir = build.getRootDir();
                     SearchResult sr = new SearchResult();
-                    sr.getData().addAll(searchFile(new File(rootDir, "log")));
+                    sr.getData().addAll(searchFile(build.getLogFile()));
                     sr.getData().addAll(searchFile(new File(rootDir, "build.xml")));
                     if (!sr.getData().isEmpty()) {
                         sr.setBuildName(project.getDisplayName());

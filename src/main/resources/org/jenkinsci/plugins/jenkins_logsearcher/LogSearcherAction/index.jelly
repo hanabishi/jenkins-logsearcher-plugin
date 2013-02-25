@@ -116,13 +116,13 @@
                                 <tr>
                                     <td>Project name pattern</td>
                                     <td widht="100"><input type="text" id="txtProjectPattern" size="60"/>
-                                    <img src="${rootURL}/images/16x16/help.png" onClick="showHelp('va')" default="INT-V.*" onmouseover="setMousePointer(this)"/><div id="va" style="display:none">Use regex to filter project to search</div>
+                                    <img src="${rootURL}/images/16x16/help.png" onClick="showHelp('va')" onmouseover="setMousePointer(this)"/><div id="va" style="display:none">Use regex to filter project to search. The name needs to be a complete match the project name. For example to match Continuous-Tools write Continuous.* .</div>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>Message pattern</td>
                                     <td><input type="text" id="txtMessagePattern" size="60"/>
-                                    <img src="${rootURL}/images/16x16/help.png" onClick="showHelp('vb')" value=".*error\:.*" onmouseover="setMousePointer(this)"/><div id="vb" style="display:none">Will search for the specified pattern and print the rows that matches</div>
+                                    <img src="${rootURL}/images/16x16/help.png" onClick="showHelp('vb')"  onmouseover="setMousePointer(this)"/><div id="vb" style="display:none">Will search for the specified pattern and print the rows that matches. The search phrase needs to be longer then five chars</div>
                                     </td>
                                 </tr>
                                 <tr>
