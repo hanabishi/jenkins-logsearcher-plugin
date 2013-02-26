@@ -104,22 +104,22 @@ public class Searcher {
         List<String> data = readFile(logFile);
 
         for (String line : data) {
-            line = StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(line));
-            Matcher m = messagePattern.matcher(line);
-            // line.
+            String modline = StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeXml(line));
+            Matcher m = messagePattern.matcher(modline);
 
-            boolean found = false;
-            while (m.find()) {
-                found = true;
-                line = line.replaceAll(Pattern.quote(m.group(0)), "<b><font color=\"red\">" + m.group(0)
-                        + "</font></b>");
-            }
+            boolean found = m.find();
+            // while () {
+            // found = true;
+            // modline = modline.replaceAll(Pattern.quote(m.group(0)),
+            // "<b><font color=\"red\">" + m.group(0)
+            // + "</font></b> ");
+            // }
             if (found) {
                 rows++;
                 totalRowHits++;
-                results.add(line);
+                results.add(modline);
             }
-            if (rows > 25) {
+            if (rows >= 20) {
                 results.add("<b><font color=\"red\">Row limit exeded</font></b>");
                 break;
             }
@@ -138,11 +138,24 @@ public class Searcher {
             boolean match = build.getResult().isWorseThan(Result.SUCCESS) || !onlySearchFailedBuilds;
             if (match) {
                 buildHits++;
+                totalBuildHits++;
                 if (buildHits <= maxBuildHits || maxBuildHits == 0) {
                     File rootDir = build.getRootDir();
                     SearchResult sr = new SearchResult();
-                    sr.getData().addAll(searchFile(build.getLogFile()));
-                    sr.getData().addAll(searchFile(new File(rootDir, "build.xml")));
+                    List<String> searchFile = searchFile(build.getLogFile());
+                    if (!searchFile.isEmpty()) {
+                        sr.getData().add("<b>Jenkins console</b>");
+                        sr.getData().addAll(searchFile);
+                    }
+                    searchFile.clear();
+
+                    searchFile = searchFile(new File(rootDir, "build.xml"));
+                    if (!searchFile.isEmpty()) {
+                        sr.getData().add("<b>build.xml</b>");
+                        sr.getData().addAll(searchFile);
+                    }
+                    searchFile.clear();
+
                     if (!sr.getData().isEmpty()) {
                         sr.setBuildName(project.getDisplayName());
                         sr.setBuildVersion(build.getNumber() + "");
