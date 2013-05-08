@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.jenkins_logsearcher;
 
+import hudson.model.BallColor;
 import hudson.model.Result;
 import hudson.model.Project;
 import hudson.model.Run;
@@ -108,12 +109,6 @@ public class Searcher {
             Matcher m = messagePattern.matcher(modline);
 
             boolean found = m.find();
-            // while () {
-            // found = true;
-            // modline = modline.replaceAll(Pattern.quote(m.group(0)),
-            // "<b><font color=\"red\">" + m.group(0)
-            // + "</font></b> ");
-            // }
             if (found) {
                 rows++;
                 totalRowHits++;
@@ -144,17 +139,17 @@ public class Searcher {
                     SearchResult sr = new SearchResult();
                     List<String> searchFile = searchFile(build.getLogFile());
                     if (!searchFile.isEmpty()) {
-                        sr.getData().add("<b>Jenkins console</b>");
+                        // sr.getData().add("<b>Jenkins console</b>");
                         sr.getData().addAll(searchFile);
                     }
                     searchFile.clear();
 
-                    searchFile = searchFile(new File(rootDir, "build.xml"));
-                    if (!searchFile.isEmpty()) {
-                        sr.getData().add("<b>build.xml</b>");
-                        sr.getData().addAll(searchFile);
-                    }
-                    searchFile.clear();
+                    // searchFile = searchFile(new File(rootDir, "build.xml"));
+                    // if (!searchFile.isEmpty()) {
+                    // sr.getData().add("<b>build.xml</b>");
+                    // sr.getData().addAll(searchFile);
+                    // }
+                    // searchFile.clear();
 
                     if (!sr.getData().isEmpty()) {
                         sr.setBuildName(project.getDisplayName());
@@ -183,12 +178,26 @@ public class Searcher {
         if (projects == null) {
             return null;
         }
-
+        int totalResults = 0;
         for (Project project : projects) {
             Matcher matcher = projectPattern.matcher(project.getDisplayName());
             if (matcher.matches()) {
                 projectHits++;
-                results.addAll(findInProject(project));
+                List<SearchResult> result = findInProject(project);
+                for(SearchResult sr: result){
+                    totalResults+=sr.getData().size();
+                }
+                
+                results.addAll(result);
+                if(results.size() > 400){
+                    SearchResult searchResult = new SearchResult();
+                    searchResult.setBuildName("Max result reached");
+                    searchResult.setBuildVersion("400");
+                    searchResult.setIcon(BallColor.RED_ANIME);
+                    searchResult.setID(400);
+                    results.add(0, searchResult);
+                    break;
+                }
             }
         }
         long elapsedTime = System.currentTimeMillis() - start;
@@ -197,5 +206,4 @@ public class Searcher {
                 messagePatternString, projectPatternString, elapsedTime, totalRowHits, projectHits, totalBuildHits,
                 caseInsensitive, onlySearchFailedBuilds, onlySearchLastBuilds, this.maxBuildHits);
     }
-
 }
